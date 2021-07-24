@@ -158,7 +158,7 @@ func (a *Rule) Commit() {
 func (a *Rule) String() string {
 	var fwRule string
 	if a.Action != "" {
-		fwRule = fmt.Sprintf("%s", a.Action)
+		fwRule = a.Action
 	}
 	if a.Direction != "" {
 		fwRule = fmt.Sprintf("%s %s", fwRule, a.Direction)
