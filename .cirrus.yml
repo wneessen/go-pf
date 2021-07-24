@@ -1,5 +1,8 @@
-container:
-  image: golang:latest
+freebsd_instance:
+  image_family: freebsd-13-0
+
+task:
+  install_script: pkg install -y go
 
 env:
   GOPROXY: https://proxy.golang.org
