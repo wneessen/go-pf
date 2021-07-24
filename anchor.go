@@ -1,5 +1,3 @@
-// +build !windows,!plan9,!linux
-
 package pf
 
 // Anchor is a pf firewall anchor struct
