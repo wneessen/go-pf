@@ -6,7 +6,7 @@ type Anchor struct {
 	RuleSet RuleSet
 }
 
-// New returns a new Anchor struct. It requires an anchor name as parameter
+// NewAnchor returns a new Anchor struct. It requires an anchor name as parameter
 func (f *Firewall) NewAnchor(n string) Anchor {
 	anchorObj := Anchor{
 		Name: n,

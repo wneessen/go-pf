@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-// ShowTables returns a string array of currently configured firewall table
+// GetTables returns a string array of currently configured firewall table
 func (f *Firewall) GetTables() ([]string, error) {
 	return f.execPfCtl("-s", "Tables")
 }
