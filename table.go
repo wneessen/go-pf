@@ -30,7 +30,7 @@ func (f *Firewall) AddToTableCIDR(t string, e ...string) error {
 	}
 
 	if len(errArray) > 0 {
-		return fmt.Errorf("One or more errors occured adding IP(s) to table: %#v", errArray)
+		return fmt.Errorf("One or more errors occurred adding IP(s) to table: %#v", errArray)
 	}
 
 	return nil
@@ -55,7 +55,7 @@ func (f *Firewall) AddToTableIP(t string, e ...string) error {
 	}
 
 	if len(errArray) > 0 {
-		return fmt.Errorf("One or more errors occured adding IP(s) to table: %#v", errArray)
+		return fmt.Errorf("One or more errors occurred adding IP(s) to table: %#v", errArray)
 	}
 
 	return nil
