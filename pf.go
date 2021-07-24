@@ -73,6 +73,26 @@ func NewFirewall(p ...string) (Firewall, error) {
 	return fwObj, nil
 }
 
+// CommitAnchor takes all commited RuleSet of the current Anchor and commits them as ruleset to the
+// pfctl anchor
+func (f *Firewall) CommitAnchor(a *Anchor) error {
+	var byteBuffer bytes.Buffer
+	var err error
+	ruleSet := a.RuleSet.RulesString() + "\n"
+
+	_, err = byteBuffer.Write([]byte(ruleSet))
+	if err != nil {
+		return err
+	}
+
+	_, err = f.execPfCtlStdin(byteBuffer, "-a", a.Name, "-f", "-", "-v")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // execPfCtl executes the pfctl command with a given list of arguments and returns
 // a string array with the output or an error if the execution failed
 func (f *Firewall) execPfCtl(a ...string) ([]string, error) {
@@ -84,9 +104,7 @@ func (f *Firewall) execPfCtl(a ...string) ([]string, error) {
 
 	// Initialize the execution
 	execCmd := exec.CommandContext(execCtx, f.ControlCmdPath)
-	for _, cmdArg := range a {
-		execCmd.Args = append(execCmd.Args, cmdArg)
-	}
+	execCmd.Args = append(execCmd.Args, a...)
 
 	// Let's also read stderr
 	var errBuf bytes.Buffer
@@ -132,9 +150,7 @@ func (f *Firewall) execPfCtlStdin(si bytes.Buffer, a ...string) ([]string, error
 
 	// Initialize the execution
 	execCmd := exec.CommandContext(execCtx, f.ControlCmdPath)
-	for _, cmdArg := range a {
-		execCmd.Args = append(execCmd.Args, cmdArg)
-	}
+	execCmd.Args = append(execCmd.Args, a...)
 
 	// Let's also read stderr
 	var errBuf bytes.Buffer
