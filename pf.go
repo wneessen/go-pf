@@ -88,7 +88,7 @@ func NewFirewall(p ...string) (Firewall, error) {
 	return fwObj, nil
 }
 
-// CommitAnchor takes all commited RuleSet of the current Anchor and commits them as ruleset to the
+// CommitAnchor takes all committed RuleSet of the current Anchor and commits them as ruleset to the
 // pfctl anchor
 func (f *Firewall) CommitAnchor(a *Anchor) error {
 	var byteBuffer bytes.Buffer

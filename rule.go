@@ -14,7 +14,7 @@ func (f *Firewall) GetRules() ([]string, error) {
 type Rule struct {
 	Action       string
 	AdressFamily string
-	Commited     bool
+	committed    bool
 	Direction    string
 	Destination  net.IPNet
 	DestPort     uint32
@@ -27,14 +27,14 @@ type Rule struct {
 
 // SetSourceIP sets a source IP for the current Rule
 func (a *Rule) SetSourceIP(i string, m ...string) {
-	if !a.Commited {
+	if !a.committed {
 		a.Source = parseIP(i, m)
 	}
 }
 
 // SetSourceCIDR sets a source IP for the current Rule
 func (a *Rule) SetSourceCIDR(c string) error {
-	if !a.Commited {
+	if !a.committed {
 		_, ipNet, err := net.ParseCIDR(c)
 		if err != nil {
 			return err
@@ -46,14 +46,14 @@ func (a *Rule) SetSourceCIDR(c string) error {
 
 // SetDestinationIP sets a destination IP for the current Rule
 func (a *Rule) SetDestinationIP(i string, m ...string) {
-	if !a.Commited {
+	if !a.committed {
 		a.Destination = parseIP(i, m)
 	}
 }
 
 // SetDestinationCIDR sets a source IP for the current Rule
 func (a *Rule) SetDestinationCIDR(c string) error {
-	if !a.Commited {
+	if !a.committed {
 		_, ipNet, err := net.ParseCIDR(c)
 		if err != nil {
 			return err
@@ -65,28 +65,28 @@ func (a *Rule) SetDestinationCIDR(c string) error {
 
 // SetSourcePort sets the source port for the current Rule
 func (a *Rule) SetSourcePort(p uint32) {
-	if !a.Commited {
+	if !a.committed {
 		a.SourcePort = p
 	}
 }
 
 // SetDestinationPort sets the source port for the current Rule
 func (a *Rule) SetDestinationPort(p uint32) {
-	if !a.Commited {
+	if !a.committed {
 		a.DestPort = p
 	}
 }
 
 // SetInterface sets the interface for the current Rule
 func (a *Rule) SetInterface(i string) {
-	if !a.Commited {
+	if !a.committed {
 		a.Interface = i
 	}
 }
 
 // SetProtocol sets the protocol type for the current Rule
 func (a *Rule) SetProtocol(p PfProtocol) {
-	if !a.Commited {
+	if !a.committed {
 		switch p {
 		case ProtocolTcp:
 			a.Protocol = "tcp"
@@ -104,7 +104,7 @@ func (a *Rule) SetProtocol(p PfProtocol) {
 
 // SetAction sets the action type for the current Rule
 func (a *Rule) SetAction(ac PfAction) {
-	if !a.Commited {
+	if !a.committed {
 		switch ac {
 		case ActionPass:
 			a.Action = "pass"
@@ -118,7 +118,7 @@ func (a *Rule) SetAction(ac PfAction) {
 
 // SetAddrFamily sets the address family for the current Rule
 func (a *Rule) SetAddrFamily(f PfAddrFam) {
-	if !a.Commited {
+	if !a.committed {
 		switch f {
 		case AdressFamilyInet:
 			a.AdressFamily = "inet"
@@ -132,7 +132,7 @@ func (a *Rule) SetAddrFamily(f PfAddrFam) {
 
 // SetDirection sets the address family for the current Rule
 func (a *Rule) SetDirection(d PfDirection) {
-	if !a.Commited {
+	if !a.committed {
 		switch d {
 		case DirectionIn:
 			a.Direction = "in"
@@ -151,7 +151,7 @@ func (a *Rule) SetLogging() {
 
 // Commit commits the current Rule so it is immutable
 func (a *Rule) Commit() {
-	a.Commited = true
+	a.committed = true
 }
 
 // String parses a given Rule and returns the full rule as string

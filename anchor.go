@@ -21,15 +21,15 @@ func (a *Anchor) NewRule() Rule {
 	return ar
 }
 
-// AddRule adds a given rule to the Anchor RuleSet struct rules array. The rule must have the commited
+// AddRule adds a given rule to the Anchor RuleSet struct rules array. The rule must have the committed
 // flag set to true
 func (a *Anchor) AddRule(r Rule) {
-	if r.Commited {
+	if r.committed {
 		a.RuleSet.AddRule(r)
 	}
 }
 
-// GetRulesString returns a line separated string of all commited rules of the current Anchor
+// RulesString returns a line separated string of all committed rules of the current Anchor
 func (a *Anchor) RulesString() string {
 	return a.RuleSet.RulesString()
 }
