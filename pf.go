@@ -18,6 +18,7 @@ import (
 // VERSION of go-pf, follows Semantic Versioning. (http://semver.org/)
 const VERSION = "0.1.0"
 
+// Constants that reflect different Protocols, Directions, Actions, etc.
 const (
 	// Protocols
 	ProtocolTcp PfProtocol = iota
@@ -38,16 +39,28 @@ const (
 	AdressFamilyInetv6
 )
 
+// PfAction represents a action in the pf firewall ruleset (i. e. block or pass)
 type PfAction int
+
+// PfAddrFam represents an address family in the pf firewall ruleset (i. e. inet or inet6)
 type PfAddrFam int
+
+// PfDirection represents the direction of data flow in the pf firewall ruleset (i. e. in or out)
 type PfDirection int
+
+// PfProtocol represents a protocol in the pf firewall ruleset (i. e. tcp or udp)
 type PfProtocol int
 
+// Firewall is the main Pf struct
 type Firewall struct {
 	ControlCmdPath string
 	IoDev          string
 }
 
+// NewFirewall returns a new Firewall struct. It pre-fills the object with required data and takes
+// a optional argument string that tells go-pf where to find the pfctl binary. It returns an error
+// if the current process is not able to execute the pfctl binary or is not able to read/write the
+// /dev/pf interface
 func NewFirewall(p ...string) (Firewall, error) {
 	fwObj := Firewall{
 		IoDev: "/dev/pf",
