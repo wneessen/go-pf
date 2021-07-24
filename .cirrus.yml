@@ -6,7 +6,7 @@ env:
   
 build_lint_test_task:
   install_script: pkg install -y go golangci-lint
-    modules_cache:
+  modules_cache:
     fingerprint_script: cat go.sum
     folder: $GOPATH/pkg/mod
   get_script: go get github.com/wneessen/go-pf
