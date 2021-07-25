@@ -12,5 +12,5 @@ build_lint_test_task:
   get_script: go get github.com/wneessen/go-pf
   linter_script: golangci-lint run
   build_script: go build github.com/wneessen/go-pf
-  test_script: go test -v -cover github.com/wneessen/go-pf
+  test_script: test -e /dev/pf && go test -v -cover github.com/wneessen/go-pf || echo "No /dev/pf found. Skipping test"
   
