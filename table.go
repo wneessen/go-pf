@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strings"
 )
 
 // GetTables returns a string array of currently configured firewall table
@@ -14,7 +15,7 @@ func (f *Firewall) GetTables() ([]string, error) {
 // AddToTableCIDR adds one or more CIDR entries to a pf radix table.
 // Returns error on parsing failures or execution issues
 func (f *Firewall) AddToTableCIDR(t string, e ...string) error {
-	errArray := make([]error, 0)
+	errArray := make([]string, 0)
 
 	for _, cidrEntry := range e {
 		ipAddr, _, err := net.ParseCIDR(cidrEntry)
@@ -25,12 +26,13 @@ func (f *Firewall) AddToTableCIDR(t string, e ...string) error {
 
 		_, err = f.execPfCtl("-t", t, "-T", "add", ipAddr.String())
 		if err != nil {
-			errArray = append(errArray, err)
+			errArray = append(errArray, err.Error())
 		}
 	}
 
 	if len(errArray) > 0 {
-		return fmt.Errorf("One or more errors occurred adding IP(s) to table: %#v", errArray)
+		return fmt.Errorf("One or more errors occurred adding IP(s) to table: %s",
+			strings.Join(errArray, ", "))
 	}
 
 	return nil
@@ -39,7 +41,7 @@ func (f *Firewall) AddToTableCIDR(t string, e ...string) error {
 // AddToTableIP adds one or more IP entries to a pf radix table.
 // Returns error on parsing failures or execution issues
 func (f *Firewall) AddToTableIP(t string, e ...string) error {
-	errArray := make([]error, 0)
+	errArray := make([]string, 0)
 
 	for _, ipEntry := range e {
 		ipAddr := net.ParseIP(ipEntry)
@@ -50,12 +52,13 @@ func (f *Firewall) AddToTableIP(t string, e ...string) error {
 
 		_, err := f.execPfCtl("-t", t, "-T", "add", ipAddr.String())
 		if err != nil {
-			errArray = append(errArray, err)
+			errArray = append(errArray, err.Error())
 		}
 	}
 
 	if len(errArray) > 0 {
-		return fmt.Errorf("One or more errors occurred adding IP(s) to table: %#v", errArray)
+		return fmt.Errorf("One or more errors occurred adding IP(s) to table: %s",
+			strings.Join(errArray, ", "))
 	}
 
 	return nil

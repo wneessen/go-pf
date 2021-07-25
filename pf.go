@@ -16,7 +16,7 @@ import (
 )
 
 // VERSION of go-pf, follows Semantic Versioning. (http://semver.org/)
-const VERSION = "0.1.0"
+const VERSION = "0.1.1"
 
 // Constants that reflect different Protocols, Directions, Actions, etc.
 const (
@@ -63,7 +63,8 @@ type Firewall struct {
 // /dev/pf interface
 func NewFirewall(p ...string) (Firewall, error) {
 	fwObj := Firewall{
-		IoDev: "/dev/pf",
+		ControlCmdPath: "/sbin/pfctl",
+		IoDev:          "/dev/pf",
 	}
 	if len(p) == 1 {
 		fwObj.ControlCmdPath = p[0]
@@ -86,6 +87,42 @@ func NewFirewall(p ...string) (Firewall, error) {
 	}
 
 	return fwObj, nil
+}
+
+// Enabled returns true if the packet filter is enabled
+func (f *Firewall) Enabled() bool {
+	statOutput, err := f.execPfCtl("-s", "Running")
+	if err != nil {
+		return false
+	}
+	if statOutput[0] == "Enabled" {
+		return true
+	}
+	return false
+}
+
+// Enable enables the firewall
+func (f *Firewall) Enable() error {
+	if f.Enabled() {
+		return nil
+	}
+	_, err := f.execPfCtl("-e")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Disable disables the firewall
+func (f *Firewall) Disable() error {
+	if !f.Enabled() {
+		return nil
+	}
+	_, err := f.execPfCtl("-d")
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // CommitAnchor takes all committed RuleSet of the current Anchor and commits them as ruleset to the
@@ -119,6 +156,7 @@ func (f *Firewall) execPfCtl(a ...string) ([]string, error) {
 
 	// Initialize the execution
 	execCmd := exec.CommandContext(execCtx, f.ControlCmdPath)
+	execCmd.Args = append(execCmd.Args, "-q")
 	execCmd.Args = append(execCmd.Args, a...)
 
 	// Let's also read stderr
@@ -165,6 +203,7 @@ func (f *Firewall) execPfCtlStdin(si bytes.Buffer, a ...string) ([]string, error
 
 	// Initialize the execution
 	execCmd := exec.CommandContext(execCtx, f.ControlCmdPath)
+	execCmd.Args = append(execCmd.Args, "-q")
 	execCmd.Args = append(execCmd.Args, a...)
 
 	// Let's also read stderr
