@@ -16,7 +16,7 @@ import (
 )
 
 // VERSION of go-pf, follows Semantic Versioning. (http://semver.org/)
-const VERSION = "0.1.1"
+const VERSION = "0.1.2"
 
 // Constants that reflect different Protocols, Directions, Actions, etc.
 const (
@@ -25,14 +25,17 @@ const (
 	ProtocolUdp
 	ProtocolIcmp
 	ProtocolIcmpv6
+	ProtocolUnknown
 
 	// Directions
 	DirectionIn PfDirection = iota
 	DirectionOut
+	DirectionUnknown
 
 	// Actions
 	ActionPass PfAction = iota
 	ActionBlock
+	ActionUnknown
 
 	// Address families
 	AdressFamilyInet PfAddrFam = iota
@@ -57,36 +60,57 @@ type Firewall struct {
 	IoDev          string
 }
 
-// NewFirewall returns a new Firewall struct. It pre-fills the object with required data and takes
-// a optional argument string that tells go-pf where to find the pfctl binary. It returns an error
-// if the current process is not able to execute the pfctl binary or is not able to read/write the
-// /dev/pf interface
-func NewFirewall(p ...string) (Firewall, error) {
-	fwObj := Firewall{
-		ControlCmdPath: "/sbin/pfctl",
-		IoDev:          "/dev/pf",
-	}
-	if len(p) == 1 {
-		fwObj.ControlCmdPath = p[0]
-	}
+// NewFirewall returns a new Firewall struct. It returns an error if the current process is not able
+// to execute the pfctl binary or is not able to read/write the /dev/pf interface
+func NewFirewall() (Firewall, error) {
+	return newFwObj("/sbin/pfctl", "/dev/pf")
+}
 
-	// Validate that ControlCmdPath and IoDev is working and permissions are given
-	ctlCmdFilePerm, err := fileperm.New(fwObj.ControlCmdPath)
-	if err != nil {
-		return fwObj, err
-	}
-	if ok := ctlCmdFilePerm.UserExecutable(); !ok {
-		return fwObj, fmt.Errorf("%s is not executable", fwObj.ControlCmdPath)
-	}
-	ioDevFilePerm, err := fileperm.New(fwObj.IoDev)
-	if err != nil {
-		return fwObj, err
-	}
-	if ok := ioDevFilePerm.UserWriteReadable(); !ok {
-		return fwObj, fmt.Errorf("%s is not read-/writable", fwObj.IoDev)
-	}
+// NewFirewallCustom returns a new Firewall struct. It takes two argument strings for the path to a
+// non-default pfctl binary and/or /dev/pf path. It returns an error if the current process is not able
+// to execute the pfctl binary or is not able to read/write the /dev/pf interface
+func NewFirewallCustom(c string, i string) (Firewall, error) {
+	return newFwObj(c, i)
+}
 
-	return fwObj, nil
+// ParseAction converts a given string to a PfAction (if known)
+func ParseAction(a string) PfAction {
+	switch strings.ToLower(a) {
+	case "block":
+		return ActionBlock
+	case "pass":
+		return ActionPass
+	default:
+		return ActionUnknown
+	}
+}
+
+// ParseDirection converts a given string to a PfDirection (if known)
+func ParseDirection(d string) PfDirection {
+	switch strings.ToLower(d) {
+	case "in":
+		return DirectionIn
+	case "out":
+		return DirectionOut
+	default:
+		return DirectionUnknown
+	}
+}
+
+// ParseProtocol converts a given string to a PfProtocol (if known)
+func ParseProtocol(p string) PfProtocol {
+	switch strings.ToLower(p) {
+	case "tcp":
+		return ProtocolTcp
+	case "udp":
+		return ProtocolUdp
+	case "icmp":
+		return ProtocolIcmp
+	case "icmp6":
+		return ProtocolIcmpv6
+	default:
+		return ProtocolUnknown
+	}
 }
 
 // Enabled returns true if the packet filter is enabled
@@ -125,12 +149,11 @@ func (f *Firewall) Disable() error {
 	return nil
 }
 
-// CommitAnchor takes all committed RuleSet of the current Anchor and commits them as ruleset to the
-// pfctl anchor
+// CommitAnchor takes all committed RuleSet a given Anchor and commits them as ruleset to the pfctl anchor
 func (f *Firewall) CommitAnchor(a *Anchor) error {
 	var byteBuffer bytes.Buffer
 	var err error
-	ruleSet := a.RuleSet.RulesString() + "\n"
+	ruleSet := a.ruleSet.RulesString() + "\n"
 
 	_, err = byteBuffer.Write([]byte(ruleSet))
 	if err != nil {
@@ -143,6 +166,51 @@ func (f *Firewall) CommitAnchor(a *Anchor) error {
 	}
 
 	return nil
+}
+
+// FlushAnchor flushes all rules of a given Anchor
+func (f *Firewall) FlushAnchor(a *Anchor) error {
+	_, err := f.execPfCtl("-a", a.Name, "-F", "rules")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// newFwObj returns a new Firewall struct. It pre-fills the object with required data and takes
+// a optional argument strings for the path to a non-default pfctl binary and/or /dev/pf path. It returns
+//an error if the current process is not able to execute the pfctl binary or is not able to read/write the
+// /dev/pf interface
+func newFwObj(c string, i string) (Firewall, error) {
+	if c == "" {
+		return Firewall{}, fmt.Errorf("No pfctl path given.")
+	}
+	if i == "" {
+		return Firewall{}, fmt.Errorf("No iodev path given.")
+	}
+	fwObj := Firewall{
+		ControlCmdPath: c,
+		IoDev:          i,
+	}
+
+	// Validate that ControlCmdPath and IoDev is working and permissions are given
+	ctlCmdFilePerm, err := fileperm.New(fwObj.ControlCmdPath)
+	if err != nil {
+		return fwObj, err
+	}
+	if ok := ctlCmdFilePerm.UserExecutable(); !ok {
+		return fwObj, fmt.Errorf("%s is not executable", fwObj.ControlCmdPath)
+	}
+	ioDevFilePerm, err := fileperm.New(fwObj.IoDev)
+	if err != nil {
+		return fwObj, err
+	}
+	if ok := ioDevFilePerm.UserWriteReadable(); !ok {
+		return fwObj, fmt.Errorf("%s is not read-/writable", fwObj.IoDev)
+	}
+
+	return fwObj, nil
 }
 
 // execPfCtl executes the pfctl command with a given list of arguments and returns
@@ -275,7 +343,7 @@ func fullNetmaskToBytes(m string) (net.IPMask, error) {
 }
 
 // parseIP parses a given IP address with an optional netmask
-func parseIP(i string, m []string) net.IPNet {
+func parseIP(i string, m []string) *net.IPNet {
 	ipAddr := net.ParseIP(i)
 	netMask := net.IPv4Mask(255, 255, 255, 255)
 	if len(m) == 1 {
@@ -284,5 +352,5 @@ func parseIP(i string, m []string) net.IPNet {
 			netMask = ipMask
 		}
 	}
-	return net.IPNet{IP: ipAddr, Mask: netMask}
+	return &net.IPNet{IP: ipAddr, Mask: netMask}
 }

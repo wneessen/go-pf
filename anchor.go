@@ -1,9 +1,11 @@
+// +build !windows,!plan9,!linux
+
 package pf
 
 // Anchor is a pf firewall anchor struct
 type Anchor struct {
 	Name    string
-	RuleSet RuleSet
+	ruleSet RuleSet
 }
 
 // NewAnchor returns a new Anchor struct. It requires an anchor name as parameter
@@ -25,11 +27,11 @@ func (a *Anchor) NewRule() Rule {
 // flag set to true
 func (a *Anchor) AddRule(r Rule) {
 	if r.committed {
-		a.RuleSet.AddRule(r)
+		a.ruleSet.AddRule(r)
 	}
 }
 
 // RulesString returns a line separated string of all committed rules of the current Anchor
 func (a *Anchor) RulesString() string {
-	return a.RuleSet.RulesString()
+	return a.ruleSet.RulesString()
 }

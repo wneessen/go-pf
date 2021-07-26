@@ -1,3 +1,5 @@
+// +build !windows,!plan9,!linux
+
 package pf
 
 import (
@@ -16,12 +18,12 @@ type Rule struct {
 	AdressFamily string
 	committed    bool
 	Direction    string
-	Destination  net.IPNet
+	Destination  *net.IPNet
 	DestPort     uint32
 	Interface    string
 	Log          bool
 	Protocol     string
-	Source       net.IPNet
+	Source       *net.IPNet
 	SourcePort   uint32
 }
 
@@ -39,7 +41,7 @@ func (a *Rule) SetSourceCIDR(c string) error {
 		if err != nil {
 			return err
 		}
-		a.Source = *ipNet
+		a.Source = ipNet
 	}
 	return nil
 }
@@ -58,7 +60,7 @@ func (a *Rule) SetDestinationCIDR(c string) error {
 		if err != nil {
 			return err
 		}
-		a.Source = *ipNet
+		a.Destination = ipNet
 	}
 	return nil
 }
@@ -96,6 +98,8 @@ func (a *Rule) SetProtocol(p PfProtocol) {
 			a.Protocol = "icmp"
 		case ProtocolIcmpv6:
 			a.Protocol = "icmp6"
+		case ProtocolUnknown:
+			a.Protocol = ""
 		default:
 			a.Protocol = ""
 		}
@@ -110,6 +114,8 @@ func (a *Rule) SetAction(ac PfAction) {
 			a.Action = "pass"
 		case ActionBlock:
 			a.Action = "block"
+		case ActionUnknown:
+			a.Action = ""
 		default:
 			a.Action = "block"
 		}
@@ -138,6 +144,8 @@ func (a *Rule) SetDirection(d PfDirection) {
 			a.Direction = "in"
 		case DirectionOut:
 			a.Direction = "out"
+		case DirectionUnknown:
+			a.Direction = ""
 		default:
 			a.Direction = ""
 		}
@@ -175,25 +183,21 @@ func (a *Rule) String() string {
 	if a.Protocol != "" {
 		fwRule = fmt.Sprintf("%s proto %s", fwRule, a.Protocol)
 	}
-	if a.Source.String() != "" || a.SourcePort > 0 {
-		if a.Source.String() != "" {
-			fwRule = fmt.Sprintf("%s from %s", fwRule, a.Source.String())
-		} else {
-			fwRule = fmt.Sprintf("%s from any", fwRule)
-		}
-		if a.SourcePort > 0 {
-			fwRule = fmt.Sprintf("%s port %d", fwRule, a.SourcePort)
-		}
+	if a.Source != nil {
+		fwRule = fmt.Sprintf("%s from %s", fwRule, a.Source.String())
+	} else {
+		fwRule = fmt.Sprintf("%s from any", fwRule)
 	}
-	if a.Destination.String() != "" || a.DestPort > 0 {
-		if a.Destination.String() != "" {
-			fwRule = fmt.Sprintf("%s to %s", fwRule, a.Destination.String())
-		} else {
-			fwRule = fmt.Sprintf("%s to any", fwRule)
-		}
-		if a.DestPort > 0 {
-			fwRule = fmt.Sprintf("%s port %d", fwRule, a.DestPort)
-		}
+	if a.SourcePort > 0 {
+		fwRule = fmt.Sprintf("%s port %d", fwRule, a.SourcePort)
+	}
+	if a.Destination != nil {
+		fwRule = fmt.Sprintf("%s to %s", fwRule, a.Destination.String())
+	} else {
+		fwRule = fmt.Sprintf("%s to any", fwRule)
+	}
+	if a.DestPort > 0 {
+		fwRule = fmt.Sprintf("%s port %d", fwRule, a.DestPort)
 	}
 
 	return fwRule

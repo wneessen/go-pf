@@ -10,11 +10,11 @@ func TestNewFirewall(t *testing.T) {
 	if err != nil {
 		t.Errorf("Could not create firewall object: %s", err)
 	}
-	_, err = NewFirewall("/sbin/pfctl")
+	_, err = NewFirewall()
 	if err != nil {
 		t.Errorf("Could not create firewall object: %s", err)
 	}
-	_, err = NewFirewall("/does/not/exist")
+	_, err = NewFirewallCustom("/does/not/exist", "/does/also/not/exist")
 	if err == nil {
 		t.Errorf("Could not create firewall object: %s", err)
 	}
