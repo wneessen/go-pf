@@ -1,3 +1,4 @@
+//go:build !windows && !plan9 && !linux
 // +build !windows,!plan9,!linux
 
 package pf
@@ -15,44 +16,47 @@ import (
 	"time"
 )
 
-// VERSION of go-pf, follows Semantic Versioning. (http://semver.org/)
-const VERSION = "0.1.2"
-
 // Constants that reflect different Protocols, Directions, Actions, etc.
+// Protocols
 const (
-	// Protocols
-	ProtocolTcp PfProtocol = iota
+	ProtocolTcp Protocol = iota
 	ProtocolUdp
 	ProtocolIcmp
 	ProtocolIcmpv6
 	ProtocolUnknown
+)
 
-	// Directions
-	DirectionIn PfDirection = iota
+// Directions
+const (
+	DirectionIn Direction = iota
 	DirectionOut
 	DirectionUnknown
+)
 
-	// Actions
-	ActionPass PfAction = iota
+// Actions
+const (
+	ActionPass Action = iota
 	ActionBlock
 	ActionUnknown
+)
 
-	// Address families
-	AdressFamilyInet PfAddrFam = iota
+// Address families
+const (
+	AdressFamilyInet AddrFam = iota
 	AdressFamilyInetv6
 )
 
-// PfAction represents a action in the pf firewall ruleset (i. e. block or pass)
-type PfAction int
+// Action represents a action in the pf firewall ruleset (i. e. block or pass)
+type Action int
 
-// PfAddrFam represents an address family in the pf firewall ruleset (i. e. inet or inet6)
-type PfAddrFam int
+// AddrFam represents an address family in the pf firewall ruleset (i. e. inet or inet6)
+type AddrFam int
 
-// PfDirection represents the direction of data flow in the pf firewall ruleset (i. e. in or out)
-type PfDirection int
+// Direction represents the direction of data flow in the pf firewall ruleset (i. e. in or out)
+type Direction int
 
-// PfProtocol represents a protocol in the pf firewall ruleset (i. e. tcp or udp)
-type PfProtocol int
+// Protocol represents a protocol in the pf firewall ruleset (i. e. tcp or udp)
+type Protocol int
 
 // Firewall is the main Pf struct
 type Firewall struct {
@@ -74,7 +78,7 @@ func NewFirewallCustom(c string, i string) (Firewall, error) {
 }
 
 // ParseAction converts a given string to a PfAction (if known)
-func ParseAction(a string) PfAction {
+func ParseAction(a string) Action {
 	switch strings.ToLower(a) {
 	case "block":
 		return ActionBlock
@@ -86,7 +90,7 @@ func ParseAction(a string) PfAction {
 }
 
 // ParseDirection converts a given string to a PfDirection (if known)
-func ParseDirection(d string) PfDirection {
+func ParseDirection(d string) Direction {
 	switch strings.ToLower(d) {
 	case "in":
 		return DirectionIn
@@ -98,7 +102,7 @@ func ParseDirection(d string) PfDirection {
 }
 
 // ParseProtocol converts a given string to a PfProtocol (if known)
-func ParseProtocol(p string) PfProtocol {
+func ParseProtocol(p string) Protocol {
 	switch strings.ToLower(p) {
 	case "tcp":
 		return ProtocolTcp
@@ -180,14 +184,14 @@ func (f *Firewall) FlushAnchor(a *Anchor) error {
 
 // newFwObj returns a new Firewall struct. It pre-fills the object with required data and takes
 // a optional argument strings for the path to a non-default pfctl binary and/or /dev/pf path. It returns
-//an error if the current process is not able to execute the pfctl binary or is not able to read/write the
+// an error if the current process is not able to execute the pfctl binary or is not able to read/write the
 // /dev/pf interface
 func newFwObj(c string, i string) (Firewall, error) {
 	if c == "" {
-		return Firewall{}, fmt.Errorf("No pfctl path given.")
+		return Firewall{}, fmt.Errorf("no pfctl path given")
 	}
 	if i == "" {
-		return Firewall{}, fmt.Errorf("No iodev path given.")
+		return Firewall{}, fmt.Errorf("no iodev path given")
 	}
 	fwObj := Firewall{
 		ControlCmdPath: c,
@@ -339,7 +343,7 @@ func fullNetmaskToBytes(m string) (net.IPMask, error) {
 		ipMask := net.IPv4Mask(tBytes[0], tBytes[1], tBytes[2], tBytes[3])
 		return ipMask, nil
 	}
-	return net.IPMask{}, fmt.Errorf("Netmask conversion failed.")
+	return net.IPMask{}, fmt.Errorf("netmask conversion failed")
 }
 
 // parseIP parses a given IP address with an optional netmask
