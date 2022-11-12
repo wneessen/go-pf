@@ -1,2 +1,4 @@
 github.com/wneessen/go-fileperm v0.1.3 h1:yy9r7oExbnWAf5DpDqExH2Sk11k81/fG9zhq5QHPAS4=
 github.com/wneessen/go-fileperm v0.1.3/go.mod h1:SIAaf7o9+u8hpfle6u1yLk2iP9xK7i+87oiSjJl6YqM=
+github.com/wneessen/go-fileperm v0.2.0 h1:FwIZ5V8S/u4K7j4E0gmdnpfKKE5Hy+phvToo3Wdn1Jc=
+github.com/wneessen/go-fileperm v0.2.0/go.mod h1:Isv0pfQJstXAlmGGJjLGqCK0Z6d1ehbbrsO2xmTRsKs=

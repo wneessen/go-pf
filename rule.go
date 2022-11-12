@@ -1,3 +1,4 @@
+//go:build !windows && !plan9 && !linux
 // +build !windows,!plan9,!linux
 
 package pf
@@ -87,7 +88,7 @@ func (a *Rule) SetInterface(i string) {
 }
 
 // SetProtocol sets the protocol type for the current Rule
-func (a *Rule) SetProtocol(p PfProtocol) {
+func (a *Rule) SetProtocol(p Protocol) {
 	if !a.committed {
 		switch p {
 		case ProtocolTcp:
@@ -107,7 +108,7 @@ func (a *Rule) SetProtocol(p PfProtocol) {
 }
 
 // SetAction sets the action type for the current Rule
-func (a *Rule) SetAction(ac PfAction) {
+func (a *Rule) SetAction(ac Action) {
 	if !a.committed {
 		switch ac {
 		case ActionPass:
@@ -123,7 +124,7 @@ func (a *Rule) SetAction(ac PfAction) {
 }
 
 // SetAddrFamily sets the address family for the current Rule
-func (a *Rule) SetAddrFamily(f PfAddrFam) {
+func (a *Rule) SetAddrFamily(f AddrFam) {
 	if !a.committed {
 		switch f {
 		case AdressFamilyInet:
@@ -137,7 +138,7 @@ func (a *Rule) SetAddrFamily(f PfAddrFam) {
 }
 
 // SetDirection sets the address family for the current Rule
-func (a *Rule) SetDirection(d PfDirection) {
+func (a *Rule) SetDirection(d Direction) {
 	if !a.committed {
 		switch d {
 		case DirectionIn:
